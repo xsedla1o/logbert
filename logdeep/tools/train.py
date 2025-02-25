@@ -222,7 +222,7 @@ class Trainer():
 
             # output is log key and timestamp
             output = self.model(features=features, device=self.device)
-            output = output.squeeze()
+            output = output.view(-1, self.num_classes)
             label = label.view(-1).to(self.device)
 
             loss = self.criterion(output, label)
