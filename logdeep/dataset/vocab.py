@@ -3,7 +3,7 @@ import pickle
 
 
 class Vocab(object):
-    def __init__(self, logs, specials=['PAD', 'UNK']):
+    def __init__(self, logs, specials=["PAD", "UNK"]):
         self.pad_index = 0
         self.unk_index = 1
 
@@ -24,11 +24,10 @@ class Vocab(object):
         return len(self.itos)
 
     def save_vocab(self, file_path):
-        with open(file_path, 'wb') as f:
+        with open(file_path, "wb") as f:
             pickle.dump(self, f)
 
     @staticmethod
     def load_vocab(file_path):
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             return pickle.load(f)
-

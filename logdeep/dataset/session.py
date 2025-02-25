@@ -1,6 +1,7 @@
-#see https://pinjiahe.github.io/papers/ISSRE16.pdf
+# see https://pinjiahe.github.io/papers/ISSRE16.pdf
 import os
 import pandas as pd
+
 
 def session_window():
     pass
@@ -36,7 +37,7 @@ def sliding_window(raw_data, para):
     # move the start and end index until next sliding window
     num_session = 1
     while end_index < log_size:
-        start_time = start_time + para['step_size']
+        start_time = start_time + para["step_size"]
         end_time = start_time + para["window_size"]
         for i in range(start_index, log_size):
             if time_data[i] < start_time:
@@ -57,28 +58,29 @@ def sliding_window(raw_data, para):
 
         num_session += 1
         if num_session % 1000 == 0:
-            print("process {} time window".format(num_session), end='\r')
+            print("process {} time window".format(num_session), end="\r")
 
-    for (start_index, end_index) in start_end_index_pair:
-        dt = deltaT_data[start_index: end_index].values
+    for start_index, end_index in start_end_index_pair:
+        dt = deltaT_data[start_index:end_index].values
         dt[0] = 0
-        new_data.append([
-            time_data[start_index: end_index].values,
-            max(label_data[start_index:end_index]),
-            logkey_data[start_index: end_index].values,
-            dt
-        ])
+        new_data.append(
+            [
+                time_data[start_index:end_index].values,
+                max(label_data[start_index:end_index]),
+                logkey_data[start_index:end_index].values,
+                dt,
+            ]
+        )
 
     assert len(start_end_index_pair) == len(new_data)
-    print('there are %d instances (sliding windows) in this dataset\n' % len(start_end_index_pair))
+    print(
+        "there are %d instances (sliding windows) in this dataset\n"
+        % len(start_end_index_pair)
+    )
     return pd.DataFrame(new_data, columns=raw_data.columns)
 
 
-
-
-
-
-def fixed_window(df, features, index, label, window_size='T'):
+def fixed_window(df, features, index, label, window_size="T"):
     """
     :param df: structured data after parsing
     features: datetime, eventid
@@ -87,7 +89,7 @@ def fixed_window(df, features, index, label, window_size='T'):
     :return:
     """
     df = df[features + [label]]
-    agg_dict = {label: 'max'}
+    agg_dict = {label: "max"}
     for f in features:
         agg_dict[f] = _custom_resampler
 
@@ -100,9 +102,8 @@ def _custom_resampler(array_like):
 
 
 def deeplog_file_generator(filename, df, features):
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         for _, row in df.iterrows():
             for val in zip(*row[features]):
-                f.write(','.join([str(v) for v in val]) + ' ')
-            f.write('\n')
-
+                f.write(",".join([str(v) for v in val]) + " ")
+            f.write("\n")

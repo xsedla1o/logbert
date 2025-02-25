@@ -14,13 +14,13 @@ class log_dataset(Dataset):
         self.sem = sem
         self.param = param
         if self.seq:
-            self.Sequentials = logs['Sequentials']
+            self.Sequentials = logs["Sequentials"]
         if self.quan:
-            self.Quantitatives = logs['Quantitatives']
+            self.Quantitatives = logs["Quantitatives"]
         if self.sem:
-            self.Semantics = logs['Semantics']
+            self.Semantics = logs["Semantics"]
         if self.param:
-            self.Parameters = logs['Parameters']
+            self.Parameters = logs["Parameters"]
         self.labels = labels
 
     def __len__(self):
@@ -29,20 +29,17 @@ class log_dataset(Dataset):
     def __getitem__(self, idx):
         log = dict()
         if self.seq:
-            log['Sequentials'] = torch.tensor(self.Sequentials[idx],
-                                              dtype=torch.long)
+            log["Sequentials"] = torch.tensor(self.Sequentials[idx], dtype=torch.long)
         if self.quan:
-            log['Quantitatives'] = torch.tensor(self.Quantitatives[idx],
-                                                dtype=torch.float)
+            log["Quantitatives"] = torch.tensor(
+                self.Quantitatives[idx], dtype=torch.float
+            )
         if self.sem:
-            log['Semantics'] = torch.tensor(self.Semantics[idx],
-                                            dtype=torch.float)
+            log["Semantics"] = torch.tensor(self.Semantics[idx], dtype=torch.float)
         if self.param:
-            log['Parameters'] = torch.tensor(self.Parameters[idx],
-                                             dtype=torch.float)
+            log["Parameters"] = torch.tensor(self.Parameters[idx], dtype=torch.float)
         return log, torch.tensor(self.labels[idx])
 
 
-if __name__ == '__main__':
-    data_dir = '../../data/'
-
+if __name__ == "__main__":
+    data_dir = "../../data/"
