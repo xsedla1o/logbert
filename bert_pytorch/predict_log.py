@@ -1,15 +1,13 @@
-import numpy as np
-import scipy.stats as stats
-import seaborn as sns
-import matplotlib.pyplot as plt
 import pickle
 import time
-import torch
-from tqdm import tqdm
-from torch.utils.data import DataLoader
 
-from bert_pytorch.dataset import WordVocab
+import numpy as np
+import torch
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+
 from bert_pytorch.dataset import LogDataset
+from bert_pytorch.dataset import WordVocab
 from bert_pytorch.dataset.sample import fixed_window
 
 
@@ -71,6 +69,10 @@ class Predictor:
         self.num_workers = options["num_workers"]
         self.num_candidates = options["num_candidates"]
         self.output_dir = options["output_dir"]
+        self.normal_path = options.get("test_normal_path",
+                                       self.output_dir + "test_normal")
+        self.anomaly_path = options.get("test_anomaly_path",
+                                        self.output_dir + "test_abnormal")
         self.model_dir = options["model_dir"]
         self.gaussian_mean = options["gaussian_mean"]
         self.gaussian_std = options["gaussian_std"]
@@ -104,14 +106,14 @@ class Predictor:
 
     @staticmethod
     def generate_test(
-        output_dir, file_name, window_size, adaptive_window, seq_len, scale, min_len
+            file_path, window_size, adaptive_window, seq_len, scale, min_len
     ):
         """
         :return: log_seqs: num_samples x session(seq)_length, tim_seqs: num_samples x session_length
         """
         log_seqs = []
         tim_seqs = []
-        with open(output_dir + file_name, "r") as f:
+        with open(file_path, "r") as f:
             for idx, line in tqdm(enumerate(f.readlines())):
                 # if idx > 40: break
                 log_seq, tim_seq = fixed_window(
@@ -144,18 +146,17 @@ class Predictor:
         log_seqs = log_seqs[test_sort_index]
         tim_seqs = tim_seqs[test_sort_index]
 
-        print(f"{file_name} size: {len(log_seqs)}")
+        print(f"{file_path} size: {len(log_seqs)}")
         return log_seqs, tim_seqs
 
-    def helper(self, model, output_dir, file_name, vocab, scale=None, error_dict=None):
+    def helper(self, model, file_path, vocab, scale=None, error_dict=None):
         total_results = []
         total_errors = []
         output_results = []
         total_dist = []
         output_cls = []
         logkey_test, time_test = self.generate_test(
-            output_dir,
-            file_name,
+            file_path,
             self.window_size,
             self.adaptive_window,
             self.seq_len,
@@ -254,7 +255,7 @@ class Predictor:
                     print(
                         "{}, #time anomaly: {} # of undetected_tokens: {}, # of masked_tokens: {} , "
                         "# of total logkey {}, deepSVDD_label: {} \n".format(
-                            file_name,
+                            file_path,
                             seq_results["num_error"],
                             seq_results["undetected_tokens"],
                             seq_results["masked_tokens"],

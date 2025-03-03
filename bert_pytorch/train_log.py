@@ -20,6 +20,7 @@ class Trainer:
         self.model_path = options["model_path"]
         self.vocab_path = options["vocab_path"]
         self.output_path = options["output_dir"]
+        self.train_path = options.get("train_path", self.output_path + "train")
         self.window_size = options["window_size"]
         self.adaptive_window = options["adaptive_window"]
         self.sample_ratio = options["train_ratio"]
@@ -60,7 +61,7 @@ class Trainer:
 
         print("\nLoading Train Dataset")
         logkey_train, logkey_valid, time_train, time_valid = generate_train_valid(
-            self.output_path + "train",
+            self.train_path,
             window_size=self.window_size,
             adaptive_window=self.adaptive_window,
             valid_size=self.valid_ratio,
@@ -214,8 +215,8 @@ class Trainer:
             outputs = 0
             total_samples = 0
             for data_loader in data_loader_list:
-                totol_length = len(data_loader)
-                data_iter = tqdm.tqdm(enumerate(data_loader), total=totol_length)
+                total_length = len(data_loader)
+                data_iter = tqdm.tqdm(enumerate(data_loader), total=total_length)
                 for i, data in data_iter:
                     data = {key: value.to(self.device) for key, value in data.items()}
 
