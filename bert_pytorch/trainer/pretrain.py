@@ -139,9 +139,9 @@ class BERTTrainer:
         self.log[str_code]["time"].append(start)
 
         # Setting the tqdm progress bar
-        totol_length = len(data_loader)
-        # data_iter = tqdm.tqdm(enumerate(data_loader), total=totol_length)
-        data_iter = enumerate(data_loader)
+        total_length = len(data_loader)
+        data_iter = tqdm.tqdm(enumerate(data_loader), total=total_length)
+        # data_iter = enumerate(data_loader)
 
         total_loss = 0.0
         total_logkey_loss = 0.0
@@ -204,12 +204,12 @@ class BERTTrainer:
                 loss.backward()
                 self.optim_schedule.step_and_update_lr()
 
-        avg_loss = total_loss / totol_length
+        avg_loss = total_loss / total_length
         self.log[str_code]["epoch"].append(epoch)
         self.log[str_code]["loss"].append(avg_loss)
         print("Epoch: {} | phase: {}, loss={}".format(epoch, str_code, avg_loss))
         print(
-            f"logkey loss: {total_logkey_loss / totol_length}, hyper loss: {total_hyper_loss / totol_length}\n"
+            f"logkey loss: {total_logkey_loss / total_length}, hyper loss: {total_hyper_loss / total_length}\n"
         )
 
         return avg_loss, total_dist
