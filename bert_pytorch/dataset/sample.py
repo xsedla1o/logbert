@@ -87,7 +87,7 @@ def generate_train_valid(
     logkey_seq_pairs = []
     time_seq_pairs = []
     session = 0
-    for line in tqdm(data_iter):
+    for line in tqdm(data_iter, desc="Generating train/valid pairs"):
         if session >= num_session:
             break
         session += 1

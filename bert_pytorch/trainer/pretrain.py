@@ -118,7 +118,8 @@ class BERTTrainer:
         return self.iteration(epoch, self.train_data, start_train=True)
 
     def valid(self, epoch):
-        return self.iteration(epoch, self.valid_data, start_train=False)
+        with torch.no_grad():
+            return self.iteration(epoch, self.valid_data, start_train=False)
 
     def iteration(self, epoch, data_loader, start_train):
         """
@@ -140,7 +141,7 @@ class BERTTrainer:
 
         # Setting the tqdm progress bar
         total_length = len(data_loader)
-        data_iter = tqdm.tqdm(enumerate(data_loader), total=total_length)
+        data_iter = tqdm.tqdm(enumerate(data_loader), total=total_length, desc=f"Training epoch: {epoch}, phase={str_code}")
         # data_iter = enumerate(data_loader)
 
         total_loss = 0.0

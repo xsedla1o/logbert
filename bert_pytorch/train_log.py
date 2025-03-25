@@ -216,7 +216,7 @@ class Trainer:
             total_samples = 0
             for data_loader in data_loader_list:
                 total_length = len(data_loader)
-                data_iter = tqdm.tqdm(enumerate(data_loader), total=total_length)
+                data_iter = tqdm.tqdm(enumerate(data_loader), total=total_length, desc=f"Calculate center from {data_loader}")
                 for i, data in data_iter:
                     data = {key: value.to(self.device) for key, value in data.items()}
 
