@@ -124,3 +124,61 @@ def generate_train_valid(
     print("=" * 40)
 
     return logkey_trainset, logkey_validset, time_trainset, time_validset
+
+
+def process_data_file(
+    file_path,
+    window_size=20,
+    adaptive_window=True,
+    seq_len=None,
+    min_len=0
+):
+    # Read the data from the file
+    with open(file_path, "r") as f:
+        data_iter = f.readlines()
+
+    logkey_seq_pairs = []
+    time_seq_pairs = []
+    for line in tqdm(data_iter, desc=f"Processing {file_path}"):
+        logkeys, times = fixed_window(line, window_size, adaptive_window, seq_len, min_len)
+        logkey_seq_pairs += logkeys
+        time_seq_pairs += times
+
+    # Convert to NumPy arrays
+    logkey_seq_pairs = np.array(logkey_seq_pairs, dtype=object)
+    time_seq_pairs = np.array(time_seq_pairs, dtype=object)
+
+    # Sort sequences by length (longest first)
+    lengths = list(map(len, logkey_seq_pairs))
+    sort_index = np.argsort(-np.array(lengths))
+    logkey_seq_pairs = logkey_seq_pairs[sort_index]
+    time_seq_pairs = time_seq_pairs[sort_index]
+
+    return logkey_seq_pairs, time_seq_pairs
+
+
+def generate_train_valid_from_files(
+    train_data_path,
+    valid_data_path,
+    window_size=20,
+    adaptive_window=True,
+    seq_len=None,
+    min_len=0,
+):
+    # Process training data
+    logkey_trainset, time_trainset = process_data_file(
+        train_data_path, window_size, adaptive_window, seq_len, min_len
+    )
+
+    # Process validation data
+    logkey_validset, time_validset = process_data_file(
+        valid_data_path, window_size, adaptive_window, seq_len, min_len
+    )
+
+    print("=" * 40)
+    print("Num of train seqs:", len(logkey_trainset))
+    print("Num of valid seqs:", len(logkey_validset))
+    print("=" * 40)
+
+    return logkey_trainset, logkey_validset, time_trainset, time_validset
+
