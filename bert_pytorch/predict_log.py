@@ -302,12 +302,12 @@ class Predictor:
 
         print("test normal predicting")
         test_normal_results, test_normal_errors = self.helper(
-            model, self.output_dir, "test_normal", vocab, scale, error_dict
+            model, self.normal_path, vocab, scale, error_dict
         )
 
         print("test abnormal predicting")
         test_abnormal_results, test_abnormal_errors = self.helper(
-            model, self.output_dir, "test_abnormal", vocab, scale, error_dict
+            model, self.anomaly_path, vocab, scale, error_dict
         )
 
         print("Saving test normal results")
