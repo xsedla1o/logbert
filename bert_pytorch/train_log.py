@@ -1,4 +1,5 @@
 import gc
+import time
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -159,10 +160,12 @@ class Trainer:
         # best_radius = 0
         # total_dist = None
         for epoch in range(self.epochs):
-            print("\n")
+            t_str = time.strftime("%H:%M:%S")
+            print("{} | Epoch: {} - start".format(t_str, epoch))
+
             if self.hypersphere_loss:
                 center = self.calculate_center(
-                    [self.train_data_loader, self.valid_data_loader]
+                    {"train": self.train_data_loader, "valid": self.valid_data_loader}
                 )
                 # center = self.calculate_center([self.train_data_loader])
                 self.trainer.hyper_center = center
@@ -207,16 +210,16 @@ class Trainer:
                 print("Early stopping")
                 break
 
-    def calculate_center(self, data_loader_list):
-        print("start calculate center")
+    def calculate_center(self, data_loaders: dict):
         # model = torch.load(self.model_path)
         # model.to(self.device)
+
         with torch.no_grad():
             outputs = 0
             total_samples = 0
-            for data_loader in data_loader_list:
+            for label, data_loader in data_loaders.items():
                 total_length = len(data_loader)
-                data_iter = tqdm.tqdm(enumerate(data_loader), total=total_length, desc=f"Calculate center from {data_loader}")
+                data_iter = tqdm.tqdm(enumerate(data_loader), total=total_length, desc=f"Calculate center from {label}")
                 for i, data in data_iter:
                     data = {key: value.to(self.device) for key, value in data.items()}
 
