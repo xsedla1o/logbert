@@ -299,8 +299,8 @@ class Predictor:
 
                 if idx < 10 or idx % 1000 == 0:
                     print(
-                        "{}, #time anomaly: {} # of undetected_tokens: {}, # of masked_tokens: {} , "
-                        "# of total logkey {}, deepSVDD_label: {} \n".format(
+                        "{}, {} time anomalies, {} undetected_tokens, {} masked_tokens, "
+                        "{} logkeys total {} deepSVDD_label".format(
                             file_path,
                             seq_results["num_error"],
                             seq_results["undetected_tokens"],
@@ -319,6 +319,14 @@ class Predictor:
 
         # for hypersphere distance
         return total_results, output_cls
+
+    def get_params(self):
+        return {
+            "is_logkey": self.is_logkey,
+            "is_time": self.is_time,
+            "hypersphere_loss": self.hypersphere_loss,
+            "hypersphere_loss_test": self.hypersphere_loss_test,
+        }
 
     def predict(self):
         model = torch.load(self.model_path, weights_only=False)
@@ -372,16 +380,10 @@ class Predictor:
         with open(self.model_dir + "test_abnormal_errors.pkl", "wb") as f:
             pickle.dump(test_abnormal_errors, f)
 
-        params = {
-            "is_logkey": self.is_logkey,
-            "is_time": self.is_time,
-            "hypersphere_loss": self.hypersphere_loss,
-            "hypersphere_loss_test": self.hypersphere_loss_test,
-        }
         best_th, best_seq_th, FP, TP, TN, FN, P, R, F1 = find_best_threshold(
             test_normal_results,
             test_abnormal_results,
-            params=params,
+            params=self.get_params(),
             th_range=np.arange(10),
             seq_range=np.arange(0, 1, 0.1),
         )
