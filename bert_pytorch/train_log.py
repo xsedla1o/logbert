@@ -40,6 +40,7 @@ class Trainer:
         self.cuda_devices = options["cuda_devices"]
         self.log_freq = options["log_freq"]
         self.epochs = options["epochs"]
+        self.warm_up_epochs = options.get("warm_up_epochs", 10)
         self.hidden = options["hidden"]
         self.layers = options["layers"]
         self.attn_heads = options["attn_heads"]
@@ -185,7 +186,7 @@ class Trainer:
                 self.trainer.save(self.model_path)
                 epochs_no_improve = 0
 
-                if epoch > 10 and self.hypersphere_loss:
+                if epoch >= self.warm_up_epochs and self.hypersphere_loss:
                     best_center = self.trainer.hyper_center
                     best_radius = self.trainer.radius
                     total_dist = train_dist + valid_dist
