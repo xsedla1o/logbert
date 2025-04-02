@@ -1,8 +1,10 @@
-from torch.utils.data import Dataset
-import torch
 import random
-import numpy as np
 from collections import defaultdict
+from typing import List, Tuple
+
+import numpy as np
+import torch
+from torch.utils.data import Dataset
 
 
 class LogDataset(Dataset):
@@ -109,7 +111,19 @@ class LogDataset(Dataset):
 
         return tokens, output_label, time_intervals, time_label
 
-    def collate_fn(self, batch, percentile=100, dynamical_pad=True):
+    def collate_fn(
+            self,
+            batch: List[Tuple[List[int], List[int], List[float], List[float]]],
+            percentile=100,
+            dynamical_pad=True
+    ):
+        """
+        Parameters
+        ----------
+        batch: A list of tuples of lists (tokens, labels, time_intervals, time_labels)
+        percentile
+        dynamical_pad
+        """
         lens = [len(seq[0]) for seq in batch]
 
         # find the max len in each batch
@@ -149,5 +163,4 @@ class LogDataset(Dataset):
             np.array(output["time_input"]), dtype=torch.float
         )
         output["time_label"] = torch.tensor(output["time_label"], dtype=torch.float)
-
         return output
