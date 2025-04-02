@@ -1,5 +1,6 @@
 import pickle
 import time
+from typing import Dict
 
 import numpy as np
 import torch
@@ -9,6 +10,42 @@ from tqdm import tqdm
 from bert_pytorch.dataset import LogDataset
 from bert_pytorch.dataset import WordVocab
 from bert_pytorch.dataset.sample import fixed_window
+
+
+def compute_anomaly_bool_np(results: Dict[str, np.ndarray], params, seq_threshold=0.5):
+    res = np.zeros(len(results["undetected_tokens"]), dtype=bool)
+
+    if params["is_logkey"]:
+        res |= results["undetected_tokens"] > results["masked_tokens"] * seq_threshold
+
+    if params["is_time"]:
+        res |= results["num_error"] > results["masked_tokens"] * seq_threshold
+
+    if params["hypersphere_loss_test"]:
+        res |= results["deepSVDD_label"]
+
+    return res
+
+
+def compute_anomaly_bool(results, params, seq_threshold=0.5):
+    is_logkey = params["is_logkey"]
+    is_time = params["is_time"]
+    detection_results = np.zeros(len(results), dtype=bool)
+    for idx, seq_res in enumerate(results):
+        if (
+            (
+                is_logkey
+                and seq_res["undetected_tokens"]
+                > seq_res["masked_tokens"] * seq_threshold
+            )
+            or (
+                is_time
+                and seq_res["num_error"] > seq_res["masked_tokens"] * seq_threshold
+            )
+            or (params["hypersphere_loss_test"] and seq_res["deepSVDD_label"])
+        ):
+            detection_results[idx] = True
+    return detection_results
 
 
 def compute_anomaly(results, params, seq_threshold=0.5):
@@ -103,6 +140,15 @@ class Predictor:
                 num_undetected_tokens += 1
 
         return num_undetected_tokens, [output_maskes, masked_label.cpu().numpy()]
+
+    def detect_logkey_anomaly_vectorized(self, masked_output, masked_label, valid_mask):
+        # shape (B, N, num_candidates)
+        topk = torch.topk(masked_output, self.num_candidates, dim=-1).indices
+        # shape (B, N)
+        is_detected = (topk == masked_label.unsqueeze(-1)).any(dim=-1)
+        # shape: (B,)
+        num_undetected_tokens = ((~is_detected) & valid_mask).sum(dim=-1)
+        return num_undetected_tokens, [[], masked_label.cpu().numpy()]
 
     @staticmethod
     def generate_test(
