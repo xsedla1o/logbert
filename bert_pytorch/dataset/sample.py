@@ -18,6 +18,56 @@ def generate_pairs(line, window_size):
     return seqs
 
 
+def fixed_window_data(data, window_size, adaptive_window, seq_len=None, min_len=0):
+    """
+    Process a session represented as a list of tokens.
+
+    Each token is expected to be either:
+      - A single element (log key) if no time is available, or
+      - A two-element list/tuple [log_key, timestamp] if a time duration is provided.
+
+    :param data: List of tokens.
+    :param window_size: Fixed window size for segmenting the tokens.
+    :param adaptive_window: If True, use the full session length as the window size.
+    :param seq_len: Optional maximum number of tokens to consider.
+    :param min_len: Minimum required length for a session.
+    :return: Tuple (logkey_seqs, time_seq) where each is a list of windows.
+    """
+    if len(data) < min_len:
+        return [], [], 0
+
+    if seq_len is not None:
+        data = data[:seq_len]
+
+    if adaptive_window:
+        window_size = len(data)
+
+    # Convert to a NumPy array for easy slicing.
+    data_arr = np.array(data)
+
+    # If each token has two elements, assume the second is a timestamp.
+    if data_arr.ndim > 1 and data_arr.shape[1] == 2:
+        # Extract time stamps and convert to float.
+        tim = data_arr[:, 1].astype(float)
+        log_keys = data_arr[:, 0]
+        # Ensure the first time stamp is 0.
+        tim[0] = 0
+    else:
+        # When no time information is available, create a zero time array.
+        log_keys = data_arr.squeeze()
+        tim = np.zeros(log_keys.shape, dtype=float)
+
+    logkey_seqs = []
+    time_seq = []
+    splits = 0
+    for e, i in enumerate(range(0, len(log_keys), window_size)):
+        logkey_seqs.append(log_keys[i: i + window_size])
+        time_seq.append(tim[i: i + window_size])
+        splits = e + 1
+
+    return logkey_seqs, time_seq, splits
+
+
 def fixed_window(line, window_size, adaptive_window, seq_len=None, min_len=0):
     line = [ln.split(",") for ln in line.split()]
 

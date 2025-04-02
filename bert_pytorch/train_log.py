@@ -57,10 +57,6 @@ class Trainer:
         save_parameters(options, self.model_dir + "parameters.txt")
 
     def train(self):
-        print("Loading vocab", self.vocab_path)
-        vocab = WordVocab.load_vocab(self.vocab_path)
-        print("vocab Size: ", len(vocab))
-
         print("\nLoading Train Dataset")
         logkey_train, logkey_valid, time_train, time_valid = generate_train_valid(
             self.train_path,
@@ -73,6 +69,12 @@ class Trainer:
             seq_len=self.seq_len,
             min_len=self.min_len,
         )
+        self.train_on(logkey_train, time_train, logkey_valid, time_valid)
+
+    def train_on(self, logkey_train, time_train, logkey_valid, time_valid):
+        print("Loading vocab", self.vocab_path)
+        vocab = WordVocab.load_vocab(self.vocab_path)
+        print("vocab Size: ", len(vocab))
 
         train_dataset = LogDataset(
             logkey_train,
@@ -83,11 +85,6 @@ class Trainer:
             on_memory=self.on_memory,
             mask_ratio=self.mask_ratio,
         )
-
-        print("\nLoading valid Dataset")
-        # valid_dataset = generate_train_valid(self.output_path + "train", window_size=self.window_size,
-        #                              adaptive_window=self.adaptive_window,
-        #                              sample_ratio=self.valid_ratio)
 
         valid_dataset = LogDataset(
             logkey_valid,
