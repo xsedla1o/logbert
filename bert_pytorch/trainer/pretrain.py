@@ -1,4 +1,5 @@
 import time
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -151,15 +152,19 @@ class BERTTrainer:
         total_hyper_loss = 0.0
 
         total_dist = []
+        telem = defaultdict(float)
         for i, data in data_iter:
             data = {key: value.to(self.device) for key, value in data.items()}
 
+            ts = time.time()
             result = self.model.forward(data["bert_input"], data["time_input"])
             mask_lm_output, mask_time_output = (
                 result["logkey_output"],
                 result["time_output"],
             )
+            telem["forward"] += time.time() - ts
 
+            ts = time.time()
             # 2-2. NLLLoss of predicting masked token word ignore_index = 0 to ignore unmasked tokens
             mask_loss = (
                 torch.tensor(0)
@@ -167,6 +172,7 @@ class BERTTrainer:
                 else self.criterion(mask_lm_output.transpose(1, 2), data["bert_label"])
             )
             total_logkey_loss += mask_loss.item()
+            telem["loss"] += time.time() - ts
 
             # 2-3. Adding next_loss and mask_loss : 3.4 Pre-training Procedure
             loss = mask_loss
@@ -175,6 +181,7 @@ class BERTTrainer:
             if self.hypersphere_loss:
                 # version 1.0
                 # hyper_loss = self.hyper_criterion(result["cls_fnn_output"].squeeze(), self.hyper_center.expand(data["bert_input"].shape[0],-1))
+                ts = time.time()
                 hyper_loss = self.hyper_criterion(
                     result["cls_output"].squeeze(),
                     self.hyper_center.expand(data["bert_input"].shape[0], -1),
@@ -198,14 +205,17 @@ class BERTTrainer:
 
                 # with deepsvdd loss
                 loss = loss + 0.1 * hyper_loss
+                telem["hyper loss"] += time.time() - ts
 
             total_loss += loss.item()
 
             # 3. backward and optimization only in train
             if start_train:
+                ts = time.time()
                 self.optim_schedule.zero_grad()
                 loss.backward()
                 self.optim_schedule.step_and_update_lr()
+                telem["backward"] += time.time() - ts
 
         avg_loss = total_loss / total_length
         self.log[str_code]["epoch"].append(epoch)
@@ -219,6 +229,8 @@ class BERTTrainer:
         print(
             f"logkey loss: {total_logkey_loss / total_length}, hyper loss: {total_hyper_loss / total_length}\n"
         )
+        for i, (key, value) in enumerate(telem.items()):
+            print(f"{i+1} - {key:>20s}: {value:6.3f} sec")
 
         return avg_loss, total_dist
 
