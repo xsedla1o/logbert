@@ -132,7 +132,7 @@ class Vocab(TorchVocab):
 
 # Building Vocab with text files
 class WordVocab(Vocab):
-    def __init__(self, texts, max_size=None, min_freq=1):
+    def __init__(self, texts, max_size=None, min_freq=1, convert=None):
         print("Building Vocab")
         counter = Counter()
         for line in tqdm.tqdm(texts):
@@ -140,6 +140,9 @@ class WordVocab(Vocab):
                 words = line
             else:
                 words = line.replace("\n", "").replace("\t", "").split()
+
+            if convert is not None:
+                words = [convert(word) for word in words]
 
             for word in words:
                 counter[word] += 1
