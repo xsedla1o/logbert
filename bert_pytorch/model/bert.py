@@ -4,6 +4,8 @@ import torch
 from .transformer import TransformerBlock
 from .embedding import BERTEmbedding
 
+torch.set_float32_matmul_precision("high")
+
 
 class BERT(nn.Module):
     """
@@ -54,6 +56,7 @@ class BERT(nn.Module):
             ]
         )
 
+    @torch.compile(mode="reduce-overhead")
     def forward(self, x, segment_info=None, time_info=None):
         # attention masking for padded token
         # torch.ByteTensor([batch_size, 1, seq_len, seq_len)
