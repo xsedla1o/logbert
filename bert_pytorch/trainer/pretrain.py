@@ -153,6 +153,7 @@ class BERTTrainer:
 
         total_dist = []
         telem = defaultdict(float)
+        t_begin = time.time()
         for i, data in data_iter:
             data = {key: value.to(self.device) for key, value in data.items()}
 
@@ -217,6 +218,7 @@ class BERTTrainer:
                 self.optim_schedule.step_and_update_lr()
                 telem["backward"] += time.time() - ts
 
+        t_total = time.time() - t_begin
         avg_loss = total_loss / total_length
         self.log[str_code]["epoch"].append(epoch)
         self.log[str_code]["loss"].append(avg_loss)
@@ -229,8 +231,11 @@ class BERTTrainer:
         print(
             f"logkey loss: {total_logkey_loss / total_length}, hyper loss: {total_hyper_loss / total_length}\n"
         )
-        for i, (key, value) in enumerate(telem.items()):
-            print(f"{i+1} - {key:>20s}: {value:6.3f} sec")
+        telem["unaccounted overhead"] = t_total - sum(telem.values())
+        prof_line = ", ".join(
+            f"{i + 1}. {k}: {v:.3f}s" for i, (k, v) in enumerate(telem.items())
+        )
+        print("Profiled: " + prof_line)
 
         return avg_loss, total_dist
 
