@@ -70,22 +70,35 @@ def compute_anomaly(results, params, seq_threshold=0.5):
     return total_errors
 
 
+def evaluate_threshold(
+        test_normal_results, test_abnormal_results, params, seq_threshold
+):
+    FP = compute_anomaly(test_normal_results, params, seq_threshold)
+    TP = compute_anomaly(test_abnormal_results, params, seq_threshold)
+
+    if TP == 0:
+        return None
+
+    TN = len(test_normal_results) - FP
+    FN = len(test_abnormal_results) - TP
+    P = 100 * TP / (TP + FP)
+    R = 100 * TP / (TP + FN)
+    F1 = 2 * P * R / (P + R)
+    return FP, TP, TN, FN, P, R, F1
+
+
 def find_best_threshold(
     test_normal_results, test_abnormal_results, params, th_range, seq_range
 ):
     best_result = [0] * 9
     for seq_th in seq_range:
-        FP = compute_anomaly(test_normal_results, params, seq_th)
-        TP = compute_anomaly(test_abnormal_results, params, seq_th)
+        res = evaluate_threshold(
+            test_normal_results, test_abnormal_results, params, seq_th
+        )
 
-        if TP == 0:
+        if res is None:
             continue
-
-        TN = len(test_normal_results) - FP
-        FN = len(test_abnormal_results) - TP
-        P = 100 * TP / (TP + FP)
-        R = 100 * TP / (TP + FN)
-        F1 = 2 * P * R / (P + R)
+        FP, TP, TN, FN, P, R, F1 = res
 
         if F1 > best_result[-1]:
             best_result = [0, seq_th, FP, TP, TN, FN, P, R, F1]
