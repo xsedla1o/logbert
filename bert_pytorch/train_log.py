@@ -18,6 +18,7 @@ class Trainer:
     def __init__(self, options):
         self.device = options["device"]
         self.model_dir = options["model_dir"]
+        self.artefact_dir = options.get("artefact_dir", self.model_dir)
         self.model_path = options["model_path"]
         self.vocab_path = options["vocab_path"]
         self.output_path = options["output_dir"]
@@ -170,7 +171,7 @@ class Trainer:
 
             _, train_dist = self.trainer.train(epoch)
             avg_loss, valid_dist = self.trainer.valid(epoch)
-            self.trainer.save_log(self.model_dir, surfix_log)
+            self.trainer.save_log(self.artefact_dir, surfix_log)
 
             if self.hypersphere_loss:
                 self.trainer.radius = self.trainer.get_radius(
@@ -238,12 +239,12 @@ class Trainer:
         return center
 
     def plot_train_valid_loss(self, surfix_log):
-        train_loss = pd.read_csv(self.model_dir + f"train{surfix_log}.csv")
-        valid_loss = pd.read_csv(self.model_dir + f"valid{surfix_log}.csv")
+        train_loss = pd.read_csv(self.artefact_dir + f"train{surfix_log}.csv")
+        valid_loss = pd.read_csv(self.artefact_dir + f"valid{surfix_log}.csv")
         sns.lineplot(x="epoch", y="loss", data=train_loss, label="train loss")
         sns.lineplot(x="epoch", y="loss", data=valid_loss, label="valid loss")
         plt.title("epoch vs train loss vs valid loss")
         plt.legend()
-        plt.savefig(self.model_dir + "train_valid_loss.png")
+        plt.savefig(self.artefact_dir + "train_valid_loss.png")
         plt.show()
         print("plot done")
