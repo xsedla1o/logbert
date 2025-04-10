@@ -112,10 +112,10 @@ class LogDataset(Dataset):
         return tokens, output_label, time_intervals, time_label
 
     def collate_fn(
-            self,
-            batch: List[Tuple[List[int], List[int], List[float], List[float]]],
-            percentile=100,
-            dynamical_pad=True
+        self,
+        batch: List[Tuple[List[int], List[int], List[float], List[float]]],
+        percentile=100,
+        dynamical_pad=True,
     ):
         """
         Parameters

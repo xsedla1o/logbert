@@ -71,7 +71,7 @@ def compute_anomaly(results, params, seq_threshold=0.5):
 
 
 def evaluate_threshold(
-        test_normal_results, test_abnormal_results, params, seq_threshold
+    test_normal_results, test_abnormal_results, params, seq_threshold
 ):
     FP = compute_anomaly(test_normal_results, params, seq_threshold)
     TP = compute_anomaly(test_abnormal_results, params, seq_threshold)
@@ -119,10 +119,12 @@ class Predictor:
         self.num_workers = options["num_workers"]
         self.num_candidates = options["num_candidates"]
         self.output_dir = options["output_dir"]
-        self.normal_path = options.get("test_normal_path",
-                                       self.output_dir + "test_normal")
-        self.anomaly_path = options.get("test_anomaly_path",
-                                        self.output_dir + "test_abnormal")
+        self.normal_path = options.get(
+            "test_normal_path", self.output_dir + "test_normal"
+        )
+        self.anomaly_path = options.get(
+            "test_anomaly_path", self.output_dir + "test_abnormal"
+        )
         self.model_dir = options["model_dir"]
         self.gaussian_mean = options["gaussian_mean"]
         self.gaussian_std = options["gaussian_std"]
@@ -164,9 +166,7 @@ class Predictor:
         return num_undetected_tokens, [[], masked_label.cpu().numpy()]
 
     @staticmethod
-    def generate_test(
-            file_path, window_size, adaptive_window, seq_len, scale, min_len
-    ):
+    def generate_test(file_path, window_size, adaptive_window, seq_len, scale, min_len):
         """
         :return: log_seqs: num_samples x session(seq)_length, tim_seqs: num_samples x session_length
         """

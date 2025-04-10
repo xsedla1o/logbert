@@ -61,8 +61,8 @@ def fixed_window_data(data, window_size, adaptive_window, seq_len=None, min_len=
     time_seq = []
     splits = 0
     for e, i in enumerate(range(0, len(log_keys), window_size)):
-        logkey_seqs.append(log_keys[i: i + window_size])
-        time_seq.append(tim[i: i + window_size])
+        logkey_seqs.append(log_keys[i : i + window_size])
+        time_seq.append(tim[i : i + window_size])
         splits = e + 1
 
     return logkey_seqs, time_seq, splits
@@ -177,11 +177,7 @@ def generate_train_valid(
 
 
 def process_data_file(
-    file_path,
-    window_size=20,
-    adaptive_window=True,
-    seq_len=None,
-    min_len=0
+    file_path, window_size=20, adaptive_window=True, seq_len=None, min_len=0
 ):
     # Read the data from the file
     with open(file_path, "r") as f:
@@ -190,7 +186,9 @@ def process_data_file(
     logkey_seq_pairs = []
     time_seq_pairs = []
     for line in tqdm(data_iter, desc=f"Processing {file_path}"):
-        logkeys, times = fixed_window(line, window_size, adaptive_window, seq_len, min_len)
+        logkeys, times = fixed_window(
+            line, window_size, adaptive_window, seq_len, min_len
+        )
         logkey_seq_pairs += logkeys
         time_seq_pairs += times
 
@@ -231,4 +229,3 @@ def generate_train_valid_from_files(
     print("=" * 40)
 
     return logkey_trainset, logkey_validset, time_trainset, time_validset
-
