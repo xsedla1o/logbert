@@ -179,12 +179,12 @@ class Trainer:
                 )
 
             # save model after 10 warm up epochs
-            if avg_loss < best_loss:
+            if epoch >= self.warm_up_epochs and avg_loss < best_loss:
                 best_loss = avg_loss
                 self.trainer.save(self.model_path)
                 epochs_no_improve = 0
 
-                if epoch >= self.warm_up_epochs and self.hypersphere_loss:
+                if self.hypersphere_loss:
                     best_center = self.trainer.hyper_center
                     best_radius = self.trainer.radius
                     total_dist = train_dist + valid_dist
@@ -202,7 +202,7 @@ class Trainer:
                     total_dist_path = self.model_dir + "best_total_dist.pt"
                     print("save total dist: ", total_dist_path)
                     torch.save(total_dist, total_dist_path)
-            else:
+            elif epoch >= self.warm_up_epochs:
                 epochs_no_improve += 1
 
             if epochs_no_improve == self.n_epochs_stop:
