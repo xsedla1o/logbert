@@ -247,4 +247,5 @@ class Trainer:
         plt.legend()
         plt.savefig(self.artefact_dir + "train_valid_loss.png")
         plt.show()
+        plt.close()
         print("plot done")
