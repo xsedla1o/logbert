@@ -54,7 +54,7 @@ def fixed_window_data(data, window_size, adaptive_window, seq_len=None, min_len=
         tim[0] = 0
     else:
         # When no time information is available, create a zero time array.
-        log_keys = data_arr.squeeze()
+        log_keys = data_arr
         tim = np.zeros(log_keys.shape, dtype=float)
 
     logkey_seqs = []
