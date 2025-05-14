@@ -30,9 +30,9 @@ def compute_anomaly_bool_np(results: Dict[str, np.ndarray], params, seq_threshol
 def compute_anomaly_bool(results, params, seq_threshold=0.5):
     is_logkey = params["is_logkey"]
     is_time = params["is_time"]
-    detection_results = np.zeros(len(results), dtype=bool)
-    for idx, seq_res in enumerate(results):
-        if (
+    detection_results = []
+    for seq_res in results:
+        detection_results.append(
             (
                 is_logkey
                 and seq_res["undetected_tokens"]
@@ -43,9 +43,8 @@ def compute_anomaly_bool(results, params, seq_threshold=0.5):
                 and seq_res["num_error"] > seq_res["masked_tokens"] * seq_threshold
             )
             or (params["hypersphere_loss_test"] and seq_res["deepSVDD_label"])
-        ):
-            detection_results[idx] = True
-    return detection_results
+        )
+    return np.asarray(detection_results, dtype=bool)
 
 
 def compute_anomaly(results, params, seq_threshold=0.5):
